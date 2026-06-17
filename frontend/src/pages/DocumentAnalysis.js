@@ -385,7 +385,7 @@ export default function DocumentAnalysis() {
 
               <div className="result-card">
 
-                <h4>Face Tampering</h4>
+                <h4>Photo Replacement Detection</h4>
 
                 <p>
                   Score:

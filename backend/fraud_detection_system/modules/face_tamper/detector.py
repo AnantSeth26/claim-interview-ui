@@ -1,205 +1,159 @@
 import os
-
 import cv2
-import mediapipe as mp
+import torch
 import numpy as np
+import segmentation_models_pytorch as smp
+
+from torchvision import transforms
 
 from fraud_detection_system.core.outputs import save_output
-
 from fraud_detection_system.config import get_verdict
 
+
 # =====================================================
-# MEDIAPIPE
+# MODEL
 # =====================================================
 
-mp_face_detection = mp.solutions.face_detection
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-face_detector = mp_face_detection.FaceDetection(
-
-    model_selection=1,
-
-    min_detection_confidence=0.5
+MODEL_PATH = os.path.join(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.dirname(__file__)
+        )
+    ),
+    "models",
+    "face_edit_model",
+    "deeplab_face_edit.pth"
 )
 
+model = smp.DeepLabV3Plus(
+    encoder_name="efficientnet-b3",
+    encoder_weights=None,
+    in_channels=3,
+    classes=1
+)
+
+model.load_state_dict(
+    torch.load(
+        MODEL_PATH,
+        map_location=DEVICE
+    )
+)
+
+model.to(DEVICE)
+model.eval()
+
+
+transform = transforms.Compose([
+    transforms.ToPILImage(),
+    transforms.Resize((384, 384)),
+    transforms.ToTensor()
+])
+
+
 # =====================================================
-# DETECT FACES
+# MAIN
 # =====================================================
 
-def detect_faces(image):
+def run_face_tamper_detection(image_path):
 
-    rgb = cv2.cvtColor(
+    image = cv2.imread(image_path)
+
+    if image is None:
+
+        return {
+            "module": "face_tamper",
+            "score": 0,
+            "verdict": "Analysis Failed",
+            "faces_detected": 0,
+            "regions": [],
+            "images": {}
+        }
+
+    filename = os.path.basename(image_path)
+
+    image_rgb = cv2.cvtColor(
         image,
         cv2.COLOR_BGR2RGB
     )
 
-    results = face_detector.process(
-        rgb
+    original = image_rgb.copy()
+
+    x = transform(image_rgb)
+
+    x = x.unsqueeze(0).to(DEVICE)
+
+    with torch.no_grad():
+
+        pred = model(x)
+
+        pred = torch.sigmoid(pred)
+
+    pred_mask = (
+        pred.squeeze()
+        .cpu()
+        .numpy()
     )
 
-    faces = []
+    binary_mask = (
+        pred_mask > 0.30
+    ).astype(np.uint8)
 
-    if results.detections:
-
-        h, w, _ = image.shape
-
-        for detection in results.detections:
-
-            bbox = detection.location_data.relative_bounding_box
-
-            x = int(bbox.xmin * w)
-            y = int(bbox.ymin * h)
-
-            bw = int(bbox.width * w)
-            bh = int(bbox.height * h)
-
-            faces.append(
-                (x, y, bw, bh)
-            )
-
-    return faces
-
-# =====================================================
-# MAIN PIPELINE
-# =====================================================
-
-def run_face_tamper_detection(
-    image_path
-):
-
-    image = cv2.imread(image_path)
-
-    filename = os.path.basename(
-        image_path
+    binary_mask = cv2.resize(
+        binary_mask,
+        (
+            original.shape[1],
+            original.shape[0]
+        ),
+        interpolation=cv2.INTER_NEAREST
     )
 
-    faces = detect_faces(image)
+    overlay = original.copy()
 
-    output = image.copy()
+    overlay[
+        binary_mask == 1
+    ] = [255, 0, 0]
 
-    total_score = 0
 
-    face_regions = []
 
-    for (x, y, w, h) in faces:
+    # ==========================================
+    # SCORE
+    # ==========================================
 
-        face_crop = image[
-            y:y+h,
-            x:x+w
-        ]
+    max_confidence = float(pred_mask.max())
+    mean_confidence = float(pred_mask.mean())
 
-        # =====================================================
-        # LOCAL ANALYSIS
-        # =====================================================
+    print("Max Prediction :", max_confidence)
+    print("Mean Prediction:", mean_confidence)
 
-        blur = cv2.GaussianBlur(
+    score = int(max_confidence * 100)
 
-            face_crop,
+    score = min(score, 100)
+    score = max(score, 0)
 
-            (5, 5),
-
-            0
-        )
-
-        diff = cv2.absdiff(
-            face_crop,
-            blur
-        )
-
-        gray = cv2.cvtColor(
-            diff,
-            cv2.COLOR_BGR2GRAY
-        )
-
-        intensity = np.mean(gray)
-
-        score = min(
-            int(intensity * 2),
-            100
-        )
-
-        total_score += score
-
-        face_regions.append({
-
-            "x": x,
-
-            "y": y,
-
-            "w": w,
-
-            "h": h,
-
-            "score": score
-        })
-
-        # =====================================================
-        # DRAW
-        # =====================================================
-
-        color = (0, 255, 0)
-
-        if score > 40:
-
-            color = (0, 0, 255)
-
-        cv2.rectangle(
-
-            output,
-
-            (x, y),
-
-            (x+w, y+h),
-
-            color,
-
-            3
-        )
-
-    # =====================================================
-    # FINAL SCORE
-    # =====================================================
-
-    if len(faces) > 0:
-
-        final_score = int(
-            total_score / len(faces)
-        )
-
-    else:
-
-        final_score = 0
-
-    # =====================================================
+    # ==========================================
     # SAVE
-    # =====================================================
+    # ==========================================
+
+    overlay_bgr = cv2.cvtColor(
+        overlay,
+        cv2.COLOR_RGB2BGR
+    )
 
     output_path = save_output(
-
-        output,
-
+        overlay_bgr,
         "overlay",
-
         f"face_tamper_{filename}"
     )
 
     return {
-
         "module": "face_tamper",
-
-        "score": final_score,
-
-        "verdict": get_verdict(
-            final_score
-        ),
-
-        "faces_detected": len(
-            faces
-        ),
-
-        "regions": face_regions,
-
+        "score": score,
+        "verdict": get_verdict(score),
+        "faces_detected": 1,
+        "regions": [],
         "images": {
-
             "visualization": output_path
         }
     }

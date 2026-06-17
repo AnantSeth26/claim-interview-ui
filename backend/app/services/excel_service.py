@@ -113,13 +113,52 @@ def process_excel(file_path):
                 print(f"⚠️ Duplicate skipped: {data['bagic_number']}")
                 continue
 
+            # ====================================
+            # FIND INVESTIGATOR USER ID
+            # ====================================
+
+            assigned_user_id = None
+
+            investigator_name = (
+                str(data.get("investigator_name") or "")
+                .strip()
+            )
+
+            if investigator_name:
+
+                user = (
+                    supabase.table("users")
+                    .select("id,name")
+                    .ilike("name", investigator_name)
+                    .limit(1)
+                    .execute()
+                )
+
+                if user.data:
+
+                    assigned_user_id = user.data[0]["id"]
+
+                    print(
+                        f"✅ Investigator matched: "
+                        f"{investigator_name} -> "
+                        f"{assigned_user_id}"
+                    )
+
+                else:
+
+                    print(
+                        f"⚠️ Investigator not found: "
+                        f"{investigator_name}"
+                    )
+
             # ✅ INSERT (SAFE VALUES)
             supabase.table("cases").insert({
                 "case_id": generate_case_id(),
                 "claim_type": claim_type,
                 "bagic_number": data.get("bagic_number"),
                 "accused_victim": data.get("accused_victim"),
-                "investigator_name": data.get("investigator_name"),
+                "investigator_name": investigator_name,
+                "assigned_user_id": assigned_user_id,
                 "accused_vehicle_number": data.get("accused_vehicle_number"),
                 "victim_vehicle_number": data.get("victim_vehicle_number"),
                 "district": data.get("district"),

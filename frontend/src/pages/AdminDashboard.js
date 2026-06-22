@@ -1,6 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { getAllCases, uploadExcel } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from "recharts";
+import {
+  FaHome,
+  FaFileAlt,
+  FaUsers,
+  FaChartBar,
+  FaClipboardList
+} from "react-icons/fa";
+import {
+  FaUserCheck,
+  FaMapMarkerAlt,
+  FaCar,
+  FaClock,
+  FaCheckCircle,
+  FaExclamationTriangle
+} from "react-icons/fa";
 
 export default function AdminDashboard() {
 
@@ -49,6 +73,29 @@ export default function AdminDashboard() {
   const handleUpload = async () => {
     if (!file) {
       alert("Please select a file");
+      const districtData = Object.entries(
+  cases.reduce((acc, item) => {
+    const district = item.district || "Unknown";
+
+    acc[district] = (acc[district] || 0) + 1;
+
+    return acc;
+  }, {})
+).map(([district, count]) => ({
+  district,
+  count
+}));
+const investigatorData = Object.entries(
+  cases.reduce((acc, item) => {
+    const name = item.investigator_name || "Unassigned";
+
+    acc[name] = (acc[name] || 0) + 1;
+
+    return acc;
+  }, {})
+)
+.sort((a, b) => b[1] - a[1])
+.slice(0, 5);
       return;
     }
 
@@ -69,31 +116,249 @@ export default function AdminDashboard() {
     }
   };
 
-  return (
-    <div className="page">
-      <div className="container">
-        <div className="card">
+const districtData = Object.entries(
+  cases.reduce((acc, item) => {
+    const district = item.district || "Unknown";
 
-          <h2>Admin Dashboard</h2>
+    acc[district] = (acc[district] || 0) + 1;
+
+    return acc;
+  }, {})
+).map(([district, count]) => ({
+  district,
+  count
+}));
+const investigatorData = Object.entries(
+  cases.reduce((acc, item) => {
+    const name = item.investigator_name || "Unassigned";
+
+    acc[name] = (acc[name] || 0) + 1;
+
+    return acc;
+  }, {})
+)
+.sort((a, b) => b[1] - a[1])
+.slice(0, 5);
+
+
+  return (
+    <div className="admin-layout">
+
+  <aside className="sidebar">
+
+    <h2>ClaimIQ</h2>
+
+    <div
+  className="menu-item active"
+  onClick={() => navigate("/dashboard")}
+>
+  Dashboard
+</div>
+
+<div
+  className="menu-item"
+  onClick={() => navigate("/cases")}
+>
+  Cases
+</div>
+
+<div
+  className="menu-item"
+  onClick={() => navigate("/investigators")}
+>
+  Investigators
+</div>
+
+<div
+  className="menu-item"
+  onClick={() => navigate("/analytics")}
+>
+  Analytics
+</div>
+
+<div
+  className="menu-item"
+  onClick={() => navigate("/reports")}
+>
+  Reports
+</div>
+
+  </aside>
+
+  <main className="main-content">
+
+    <div className="card">
+
+        <div className="dashboard-topbar">
+
+  <div>
+    <h1>Motor Claims Dashboard</h1>
+    <p>
+      Monitor investigations and manage motor insurance claims
+    </p>
+  </div>
+
+  <div className="topbar-right">
+
+    <input
+      className="quick-search"
+      type="text"
+      placeholder="🔍 Search Case ID..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+      <div className="notification-bell">
+  🔔
+  <span className="notification-badge">3</span>
+</div>
+
+    <div className="admin-profile">
+      <div>
+        <h4>Admin</h4>
+        <span>Claims Manager</span>
+      </div>
+
+      <div className="avatar">
+        A
+      </div>
+    </div>
+
+  </div>
+
+
+
+</div>
+          <div className="stats-grid">
+ <div className="stat-card total-card">
+  <FaFileAlt className="stat-icon" />
+  <h3>{cases.length}</h3>
+  <p>Total Cases</p>
+</div>
+
+<div className="stat-card assigned-card">
+  <FaUserCheck className="stat-icon" />
+  <h3>
+    {cases.filter(c => c.investigator_name).length}
+  </h3>
+  <p>Assigned Cases</p>
+</div>
+
+<div className="stat-card district-card">
+  <FaMapMarkerAlt className="stat-icon" />
+  <h3>
+    {
+      new Set(
+        cases.map(c => c.district).filter(Boolean)
+      ).size
+    }
+  </h3>
+  <p>Districts Covered</p>
+</div>
+
+<div className="stat-card motor-card">
+  <FaCar className="stat-icon" />
+  <h3>
+    {
+      cases.filter(
+        c => c.claim_type === "motor"
+      ).length
+    }
+  </h3>
+  <p>Motor Claims</p>
+</div>
+
+<div className="stat-card pending-card">
+  <h3>12</h3>
+  <p>Pending Verification</p>
+</div>
+
+<div className="stat-card fraud-card">
+  <h3>4</h3>
+  <p>Fraud Alerts</p>
+</div>
+
+<div className="stat-card completed-card">
+  <h3>28</h3>
+  <p>Completed Cases</p>
+</div>
+
+<div className="stat-card processing-card">
+  <h3>3.2 Days</h3>
+  <p>Avg Processing</p>
+</div>
+</div>
+<div className="analytics-grid">
+
+  <div className="chart-card">
+    <h3>Claims by District</h3>
+
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={districtData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="district" />
+        <YAxis />
+        <Tooltip />
+        <Bar
+  dataKey="count"
+  fill="#3366E8"
+  radius={[8, 8, 0, 0]}
+/>
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+
+  <div className="leaderboard-card">
+    <h3>Top Investigators</h3>
+
+    {investigatorData.map(([name, count]) => (
+      <div className="leader-row" key={name}>
+        <span>{name}</span>
+        <strong>{count}</strong>
+      </div>
+    ))}
+  </div>
+
+</div>
+<div className="activity-card">
+  <h3>Recent Activity</h3>
+
+  {cases.slice(0, 5).map((c) => (
+    <div className="activity-row" key={c.id}>
+      <strong>{c.case_id}</strong>
+
+      <span>
+        {c.investigator_name || "Unassigned"}
+      </span>
+    </div>
+  ))}
+</div>
 
           {/* 📤 UPLOAD */}
-          <div>
-            <input type="file" accept=".xlsx" onChange={handleFileChange} />
-            <button onClick={handleUpload}>
-              Upload Excel
-            </button>
-          </div>
+          <div className="upload-section">
+
+  <h3>Bulk Case Import</h3>
+
+  <input
+    type="file"
+    accept=".xlsx"
+    onChange={handleFileChange}
+  />
+
+  <button
+    className="upload-btn"
+    onClick={handleUpload}
+  >
+    Upload Excel File
+  </button>
+
+</div>
 
           {/* 🔴 STEP 1 — GROUP FILTERS */}
           <div className="section-card">
             <h3>Filters</h3>
 
             <div className="grid-3">
-              <input
-                placeholder="Search Case ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+             
 
               <input
                 placeholder="District"
@@ -124,114 +389,132 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* 📅 ALLOCATION DATE */}
-          <div>
-            <label>Allocation Date:</label>
-            <div>
-              <input
-                type="date"
-                placeholder="From"
-                onChange={(e) => setAllocationFrom(e.target.value)}
-              />
-              <input
-                type="date"
-                placeholder="To"
-                onChange={(e) => setAllocationTo(e.target.value)}
-              />
-            </div>
-          </div>
+          
 
-          {/* 📅 FIR DATE */}
-          <div>
-            <label>FIR Date:</label>
-            <div>
-              <input
-                type="date"
-                onChange={(e) => setFirFrom(e.target.value)}
-              />
-              <input
-                type="date"
-                onChange={(e) => setFirTo(e.target.value)}
-              />
-            </div>
-          </div>
+          <div className="date-grid">
 
-          <h3>All Cases</h3>
+  <div>
+    <label>Allocation From</label>
+    <input
+      type="date"
+      value={allocationFrom}
+      onChange={(e) => setAllocationFrom(e.target.value)}
+    />
+  </div>
 
-          {cases.length === 0 && <p>No cases found</p>}
+  <div>
+    <label>Allocation To</label>
+    <input
+      type="date"
+      value={allocationTo}
+      onChange={(e) => setAllocationTo(e.target.value)}
+    />
+  </div>
 
-          {/* 🔥 FILTER LOGIC */}
-          {cases
-            .filter((c) =>
-              c.case_id?.toLowerCase().includes(search.toLowerCase())
-            )
+  <div>
+    <label>FIR From</label>
+    <input
+      type="date"
+      value={firFrom}
+      onChange={(e) => setFirFrom(e.target.value)}
+    />
+  </div>
 
-            .filter((c) =>
-              districtFilter
-                ? (c.district || "").toLowerCase().includes(districtFilter.toLowerCase())
-                : true
-            )
+  <div>
+    <label>FIR To</label>
+    <input
+      type="date"
+      value={firTo}
+      onChange={(e) => setFirTo(e.target.value)}
+    />
+  </div>
 
-            .filter((c) =>
-              policeFilter
-                ? (c.police_station || "").toLowerCase().includes(policeFilter.toLowerCase())
-                : true
-            )
+</div>
 
-            .filter((c) =>
-              investigatorFilter
-                ? (c.investigator_name || "").toLowerCase().includes(investigatorFilter.toLowerCase())
-                : true
-            )
+         <div className="table-header">
+  <h3>All Cases</h3>
 
-            .filter((c) => {
-              if (!allocationFrom && !allocationTo) return true;
+  <span>
+    Showing {cases.length} Cases
+  </span>
+</div>
 
-              const date = new Date(
-                new Date(c.allocation_date).toLocaleString("en-US", {
-                  timeZone: "Asia/Kolkata"
-                })
-              );
-              if (allocationFrom && date < new Date(allocationFrom)) return false;
-              if (allocationTo && date > new Date(allocationTo)) return false;
+{cases.length === 0 && <p>No cases found</p>}
 
-              return true;
-            })
+<div className="table-container">
+  <table className="cases-table">
+    <thead>
+      <tr>
+        <th>Case ID</th>
+        <th>Investigator</th>
+        <th>District</th>
+        <th>Police Station</th>
+        <th>Type</th>
+        <th>Action</th>
+      </tr>
+    </thead>
 
-            .filter((c) => {
-              if (!firFrom && !firTo) return true;
+    <tbody>
+      {cases
+        .filter((c) =>
+          c.case_id?.toLowerCase().includes(search.toLowerCase())
+        )
 
-              const date = new Date(
-              new Date(c.fir_date).toLocaleString("en-US", {
-                timeZone: "Asia/Kolkata"
-              })
-            );
-              if (firFrom && date < new Date(firFrom)) return false;
-              if (firTo && date > new Date(firTo)) return false;
+        .filter((c) =>
+          districtFilter
+            ? (c.district || "")
+                .toLowerCase()
+                .includes(districtFilter.toLowerCase())
+            : true
+        )
 
-              return true;
-            })
+        .filter((c) =>
+          policeFilter
+            ? (c.police_station || "")
+                .toLowerCase()
+                .includes(policeFilter.toLowerCase())
+            : true
+        )
 
-            .map((c) => (
-              <div
-                key={c.id}
-                className="case-card"
+        .filter((c) =>
+          investigatorFilter
+            ? (c.investigator_name || "")
+                .toLowerCase()
+                .includes(investigatorFilter.toLowerCase())
+            : true
+        )
+
+        .map((c) => (
+          <tr key={c.id}>
+            <td>{c.case_id}</td>
+            <td>{c.investigator_name || "Unassigned"}</td>
+            <td>{c.district || "N/A"}</td>
+            <td>{c.police_station || "N/A"}</td>
+
+            <td>
+              <span className="badge">
+                {c.claim_type}
+              </span>
+            </td>
+
+            <td>
+              <button
+                className="view-btn"
                 onClick={() => openCase(c)}
               >
-                {/* 🔴 STEP 3 — IMPROVED CARD */}
-                <div className="flex-row">
-                  <b>{c.case_id}</b>
-                  <span className="badge">{c.claim_type}</span>
-                </div>
+                View
+              </button>
+            </td>
+          </tr>
+        ))}
+    </tbody>
+  </table>
+</div>
 
-                <p> {c.investigator_name || "Unassigned"}</p>
-                <p> {c.district || "N/A"}</p>
-                <p> {c.police_station || "N/A"}</p>
-              </div>
-            ))}
+           </div>
 
-        </div>
-      </div>
-    </div>
+  </main>
+
+</div>
   );
 }

@@ -11,7 +11,9 @@ load_dotenv(dotenv_path=ENV_PATH)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-
+print("ENV PATH:", ENV_PATH)
+print("SUPABASE_URL =", SUPABASE_URL)
+print("SUPABASE_KEY FOUND =", bool(SUPABASE_KEY))
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise Exception("❌ Supabase env variables not loaded properly")

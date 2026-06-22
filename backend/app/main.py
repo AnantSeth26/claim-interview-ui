@@ -6,8 +6,8 @@ import os
 
 from app.api.auth_routes import router as auth_router
 from app.api.case_routes import router as case_router
-from app.api.interview_routes import router as interview_router
-from app.api.interview_ws import router as interview_ws_router
+#from app.api.interview_routes import router as interview_router
+#from app.api.interview_ws import router as interview_ws_router
 from app.api.upload_video import router as upload_router
 from app.api.document_routes import router as document_router
 from app.api.admin_routes import router as admin_router
@@ -43,8 +43,8 @@ app.mount(
 
 app.include_router(auth_router)
 app.include_router(case_router)
-app.include_router(interview_router)
-app.include_router(interview_ws_router)
+#app.include_router(interview_router)
+#app.include_router(interview_ws_router)
 app.include_router(upload_router)
 app.include_router(document_router)
 app.include_router(admin_router, prefix="/admin")

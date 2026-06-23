@@ -25,6 +25,7 @@ import {
   FaCheckCircle,
   FaExclamationTriangle
 } from "react-icons/fa";
+import AdminLayout from "./AdminLayout";
 
 export default function AdminDashboard() {
 
@@ -431,7 +432,7 @@ const investigatorData = Object.entries(
 
 </div>
 
-         <div className="table-header">
+         {/* <div className="table-header">
   <h3>All Cases</h3>
 
   <span>
@@ -509,7 +510,7 @@ const investigatorData = Object.entries(
         ))}
     </tbody>
   </table>
-</div>
+</div> */}
 
            </div>
 

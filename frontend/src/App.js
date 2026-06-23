@@ -8,9 +8,11 @@ import NewCase from "./pages/NewCase";
 import Interview from "./pages/Interview";
 import CaseDetails from "./pages/CaseDetails";
 import AdminDashboard from "./pages/AdminDashboard"; // ✅ NEW
+import Cases from "./pages/Cases";
 
 import DocumentAnalysis from "./pages/DocumentAnalysis";
 import StatementAnalysis from "./pages/StatementAnalysis";
+
 
 export default function App() {
 
@@ -29,6 +31,10 @@ export default function App() {
             : <Dashboard />
         }
       />
+      <Route
+  path="/cases"
+  element={<Cases />}
+/>
 
       {/* ✅ KEEP EVERYTHING ELSE SAME */}
       <Route path="/new-case" element={<NewCase />} />

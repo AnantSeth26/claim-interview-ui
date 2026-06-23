@@ -280,7 +280,17 @@ export default function CaseDetails() {
       <div className="container">
         <div className="card">
 
-          <h2>Case Details</h2>
+          {/* <h2>Case Details</h2> */}
+          <div className="case-summary-card">
+  <div>
+    <h2>{caseData.case_id}</h2>
+    <p>{caseData.claim_type?.toUpperCase()} CLAIM</p>
+  </div>
+
+  <div className="status-badge">
+    {caseData.case_status || "Pending"}
+  </div>
+</div>
           {/* 🔘 TOP ACTION BUTTONS (NEW - SAFE SHIFT) */}
           <div className="section-card case-actions" style={{ marginBottom: "15px" }}>
 
@@ -338,6 +348,24 @@ export default function CaseDetails() {
               </button>
             </div>
           )}
+          {caseData.claim_type === "motor" && (
+                <div style={{ marginBottom: "15px" }}>
+                  <label>Select Subcategory:</label>
+
+                  <select
+                    value={subcategory}
+                    onChange={(e) => setSubcategory((e.target.value || "").trim())}
+                  >
+                    <option value="">Select</option>
+
+                    {motorCategories.map((cat, i) => (
+                      <option key={i} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
 
           {/* 🧾 CASE INFO */}
@@ -346,32 +374,40 @@ export default function CaseDetails() {
 
             <div className="accordion-content">
 
-            <p><b>Case ID:</b> {caseData.case_id}</p>
-            <p><b>Bagic No:</b> {caseData.bagic_number || "N/A"}</p>
-            <p><b>Unique ID:</b> {caseData.id}</p>
+             <div className="info-grid">
 
-            <p><b>District:</b> {caseData.district || "N/A"}</p>
-            <p><b>Police Station:</b> {caseData.police_station || "N/A"}</p>
-            <p><b>FIR No:</b> {caseData.fir_no || "N/A"}</p>
+    <div className="info-item">
+      <span>Case ID</span>
+      <strong>{caseData.case_id}</strong>
+    </div>
 
-            <p>
-              <b>Allocation Date (Company):</b>{" "}
-              {caseData.allocation_date ? formatToIST(caseData.allocation_date) : "N/A"}
-            </p>
+    <div className="info-item">
+      <span>Bagic No</span>
+      <strong>{caseData.bagic_number || "N/A"}</strong>
+    </div>
 
-            <p>
-              <b>FIR Date:</b>{" "}
-              {caseData.fir_date ? formatToIST(caseData.fir_date) : "N/A"}
-            </p>
+    <div className="info-item">
+      <span>District</span>
+      <strong>{caseData.district || "N/A"}</strong>
+    </div>
 
-            <p><b>Delay in FIR:</b> {caseData.time_lag || "N/A"}</p>
+    <div className="info-item">
+      <span>Police Station</span>
+      <strong>{caseData.police_station || "N/A"}</strong>
+    </div>
 
-            <p><b>Sections:</b> {caseData.bns_section || "N/A"}</p>
-            <p><b>Sec Tagging:</b> {caseData.sec_tagging || "N/A"}</p>
+    <div className="info-item">
+      <span>FIR No</span>
+      <strong>{caseData.fir_no || "N/A"}</strong>
+    </div>
 
-            <p><b>Accused:</b> {caseData.accused_victim || "N/A"}</p>
-            <p><b>Accused Vehicle:</b> {caseData.accused_vehicle_number || "N/A"}</p>
-            <p><b>Victim Vehicle:</b> {caseData.victim_vehicle_number || "N/A"}</p>
+    <div className="info-item">
+      <span>Unique ID</span>
+      <strong>{caseData.id}</strong>
+    </div>
+
+  </div>
+
 
             </div>
           </details>
@@ -384,9 +420,24 @@ export default function CaseDetails() {
 
             <h3>Fraud Identification</h3>
 
-            <p><b>Fraud Flag:</b> {caseData.fraud_flag || "N/A"}</p>
-            <p><b>Reason:</b> {caseData.fraud_reason || "N/A"}</p>
-            <p><b>Evidence:</b> {caseData.fraud_evidence || "N/A"}</p>
+            <div className="info-grid">
+
+  <div className="info-item">
+    <span>Fraud Flag</span>
+    <strong>{caseData.fraud_flag || "N/A"}</strong>
+  </div>
+
+  <div className="info-item">
+    <span>Reason</span>
+    <strong>{caseData.fraud_reason || "N/A"}</strong>
+  </div>
+
+  <div className="info-item">
+    <span>Evidence</span>
+    <strong>{caseData.fraud_evidence || "N/A"}</strong>
+  </div>
+
+</div>
 
             </div>
 
@@ -443,24 +494,7 @@ export default function CaseDetails() {
 
             <div className="accordion-content">
 
-              {caseData.claim_type === "motor" && (
-                <div style={{ marginBottom: "15px" }}>
-                  <label>Select Subcategory:</label>
-
-                  <select
-                    value={subcategory}
-                    onChange={(e) => setSubcategory((e.target.value || "").trim())}
-                  >
-                    <option value="">Select</option>
-
-                    {motorCategories.map((cat, i) => (
-                      <option key={i} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+            
 
 
 
@@ -748,61 +782,76 @@ export default function CaseDetails() {
               {logs.length === 0 && <p>No activity yet</p>}
 
               <div>
-                {Array.isArray(logs) && logs.map((log, i) => (
-                  <div key={i} style={{ marginBottom: "10px" }}>
-                    <p><b>{log.action}</b></p>
-                    <p>{log.description}</p>
-                    <small>{formatToIST(log.created_at)}</small>
-                  </div>
-                ))}
+               <div className="timeline">
+  {logs.map((log, i) => (
+    <div key={i} className="timeline-item">
+
+      <div className="timeline-dot"></div>
+
+      <div className="timeline-content">
+        <h4>{log.action.replaceAll("_", " ")}</h4>
+
+        <p>{log.description}</p>
+
+        <small>
+          {formatToIST(log.created_at)}
+        </small>
+      </div>
+
+    </div>
+  ))}
+</div>
               </div>
 
             </div>
           </details> 
 
-          <h3>Remarks</h3>
+         <div className="remarks-card">
+  <h3>Remarks</h3>
 
-          {remarks.length === 0 && <p>No remarks</p>}
+  {remarks.length === 0 ? (
+    <p>No remarks available</p>
+  ) : (
+    remarks.map((r) => (
+      <div key={r.id} className="remark-item">
+        <p>{r.text}</p>
+      </div>
+    ))
+  )}
+</div>
 
-          <div>
-            {remarks.map((r) => (
-              <div key={r.id} style={{ marginBottom: "10px" }}>
-                {editingRemarkId === r.id ? (
-                  <>
-                    <textarea
-                      value={remarkText}
-                      onChange={(e) => setRemarkText(e.target.value)}
-                    />
+         <div className="remarks-card">
+  <h3>Remarks</h3>
 
-                    <button
-                      onClick={async () => {
-                        await updateRemark(r.id, { text: remarkText });
-                        setEditingRemarkId(null);
-                        loadData();
-                      }}
-                    >
-                      Save
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <p>{r.text}</p>
-                    <p><i>{r.created_by || "Unknown"}</i></p>
+  {remarks.length === 0 ? (
+    <p>No remarks available</p>
+  ) : (
+    remarks.map((r) => (
+      <div key={r.id} className="remark-item">
 
-                    <button
-                      onClick={() => {
-                        setEditingRemarkId(r.id);
-                        setRemarkText(r.text);
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </>
-                )}
-              </div>
-            ))}
-          </div> 
+        <p className="remark-text">
+          {r.text}
+        </p>
 
+        <p className="remark-author">
+  Added by {r.created_by || "Unknown"}
+</p>
+
+        <button
+          className="remark-edit-btn"
+          onClick={() => {
+            setEditingRemarkId(r.id);
+            setRemarkText(r.text);
+            setShowRemarkModal(true);
+          }}
+        >
+          Edit
+        </button>
+
+      </div>
+    ))
+  )}
+</div>
           {/* 🔘 ACTION BUTTONS */}
           <div className="section-card case-actions">
 
@@ -927,20 +976,36 @@ export default function CaseDetails() {
                   style={{ width: "100%", marginBottom: "10px" }}
                 />
 
-                <button
-                  onClick={async () => {
-                    await addRemark(caseData.case_id, {
-                      text: remarkText,
-                      created_by: user?.name || JSON.parse(localStorage.getItem("user"))?.name || "Unknown"
-                    });
+               <button
+  onClick={async () => {
 
-                    setRemarkText("");
-                    setShowRemarkModal(false);
-                    loadData();
-                  }}
-                >
-                  Add Remark
-                </button>
+    if (editingRemarkId) {
+
+      await updateRemark(editingRemarkId, {
+        text: remarkText
+      });
+
+    } else {
+
+      await addRemark(caseData.case_id, {
+        text: remarkText,
+        created_by:
+          user?.name ||
+          JSON.parse(localStorage.getItem("user"))?.name ||
+          "Unknown"
+      });
+
+    }
+
+    setRemarkText("");
+    setEditingRemarkId(null);
+    setShowRemarkModal(false);
+
+    loadData();
+  }}
+>
+  {editingRemarkId ? "Save Changes" : "Add Remark"}
+</button>
 
                 <button
                   style={{ marginTop: "10px" }}

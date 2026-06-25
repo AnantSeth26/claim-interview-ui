@@ -123,3 +123,21 @@
     width: 100%;
   }
 }
+/* ---------------- SMALLER END INTERVIEW BUTTON + SPACING ---------------- */
+
+.action-buttons {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.end-btn {
+  flex: 0 0 auto;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 160px;
+}

@@ -329,6 +329,8 @@ def reassign_case(case_id: str, data: dict):
             }) \
             .eq("id", case_id) \
             .execute()
+        # print(update_res.data)
+        # print(update_res)
 
         if not update_res.data:
             return {"error": "Case update failed"}

@@ -132,6 +132,12 @@ export default function CaseDetails() {
 
       const interviewRes = await getInterviewDetails(realCaseId, subcategory)
       const videoRes = await getVideos(realCaseId, subcategory);
+
+//       console.log("realCaseId:", realCaseId);
+// console.log("subcategory:", subcategory);
+// console.log("videoRes:", videoRes);
+// console.log("Is Array:", Array.isArray(videoRes));
+
       const docsRes = await getDocuments(realCaseId, subcategory);
       const logsRes = await getCaseLogs(realCaseId, subcategory);
       const remarksRes = await getRemarks(realCaseId);
@@ -312,42 +318,76 @@ export default function CaseDetails() {
 
           </div>
           {showReassign && (
-            <div style={{ marginTop: "10px" }}>
-              <select
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-              >
-                <option value="">Select Investigator</option>
+  <div className="assignment-card">
 
-                {users.map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
+    <h3 className="assignment-title">
+      👤 Investigator Assignment
+    </h3>
 
-              <button
-                onClick={async () => {
-                  if (!selectedUserId) {
-                    alert("Please select a user");
-                    return;
-                  }
+    <div className="assignment-label">
+      Current Investigator
+    </div>
 
-                  const res = await reassignCase(caseData.id, selectedUserId);
+    <div className="current-investigator">
+      {caseData.investigator_name || "Not Assigned"}
+    </div>
 
-                  if (res.error) {
-                    alert(res.error);
-                  } else {
-                    alert("Case reassigned");
-                    setShowReassign(false);
-                    
-                  }
-                }}
-              >
-                Confirm
-              </button>
-            </div>
-          )}
+    <div className="assignment-label">
+      Assign To
+    </div>
+
+    <select
+      className="assignment-select"
+      value={selectedUserId}
+      onChange={(e) => setSelectedUserId(e.target.value)}
+    >
+      <option value="">Select Investigator</option>
+
+      {users.map((u) => (
+        <option key={u.id} value={u.id}>
+          {u.name}
+        </option>
+      ))}
+    </select>
+
+   
+
+  <div className="assignment-buttons">
+
+  <button
+    className="assign-btn"
+    onClick={async () => {
+      if (!selectedUserId) {
+        alert("Please select a user");
+        return;
+      }
+
+      const res = await reassignCase(caseData.id, selectedUserId);
+
+      if (res.error) {
+        alert(res.error);
+      } else {
+        alert("Case reassigned");
+        setShowReassign(false);
+      }
+    }}
+  >
+    Assign Investigator
+  </button>
+
+  <button
+    className="cancel-btn"
+    onClick={() => setShowReassign(false)}
+  >
+    Cancel
+  </button>
+
+
+
+</div>
+
+  </div>
+)}
           {caseData.claim_type === "motor" && (
                 <div style={{ marginBottom: "15px" }}>
                   <label>Select Subcategory:</label>
@@ -499,10 +539,25 @@ export default function CaseDetails() {
 
 
               {/* 🎥 VIDEO SECTION */}
-              <h3>Videos</h3>
-              <div className="section-card">
+             <div className="evidence-card">
 
-              {videos.length === 0 && <p>No videos available</p>}
+  <div className="evidence-header">
+    <span className="evidence-icon">🎥</span>
+
+    <div>
+      <h3>Videos</h3>
+      <p>Interview recordings and AI analysis</p>
+    </div>
+  </div>
+
+  <div className="section-card">
+  
+
+             {videos.length === 0 && (
+  <div className="empty-state">
+    No videos available
+  </div>
+)}
 
               {videos.length > 0 && (
                 <div className="video-carousel">
@@ -604,13 +659,30 @@ export default function CaseDetails() {
                   }>▶</button>
 
                 </div>
+                
               )}
               </div>
+              </div>          
+              
+              
 
               {/* 🧾 INTERVIEWS */}
-              <h3>Interview Transcript</h3>
+             <div className="evidence-card">
 
-              {interviews.length === 0 && <p>No interviews</p>}
+  <div className="evidence-header">
+    <span className="evidence-icon">📝</span>
+
+    <div>
+      <h3>Interview Transcript</h3>
+      <p>Interview recordings and statements</p>
+    </div>
+  </div>
+
+              {interviews.length === 0 && (
+  <div className="section-card empty-state">
+    No interviews available
+  </div>
+)}
 
               <div className="interview-list">
                 {interviews.map((intv, idx) => (
@@ -673,6 +745,7 @@ export default function CaseDetails() {
                       )}
 
                     </div>
+                    
 
                     {intv.qa_script && (
                       <div className="qa-box">
@@ -704,11 +777,15 @@ export default function CaseDetails() {
                         })()}
 
                       </div>
+                      
                     )}
 
                   </div>
+                  
                 ))}
               </div>
+              </div>
+              
 
               {documents.some(
                 d => d.subcategory === "verification_photo"
@@ -724,50 +801,78 @@ export default function CaseDetails() {
                   Verification Photo Uploaded ✅
                 </div>
               )}
+{/* 📄 DOCUMENT SECTION */}
+<div className="evidence-card">
 
-              <h3>Documents</h3>
+  <div className="evidence-header">
+    <span className="evidence-icon">📄</span>
 
-              {documents.length === 0 && <p>No documents</p>}
+    <div>
+      <h3>Documents</h3>
+      <p>Supporting documents uploaded</p>
+    </div>
+  </div>
 
-              <div className="doc-list">
-                {documents.map((doc, i) => (
-                  <a key={i} href={doc.file_url} target="_blank" rel="noreferrer" className="doc-item">
-                    📄 {doc.file_type}
-                  </a>
-                ))}
+  {documents.length === 0 && (
+    <div className="empty-state">
+      No documents uploaded
+    </div>
+  )}
+
+  {documents.length > 0 && (
+    <div className="doc-list">
+      {documents.map((doc, i) => (
+        <a
+          key={i}
+          href={doc.file_url}
+          target="_blank"
+          rel="noreferrer"
+          className="doc-item"
+        >
+          📄 {doc.file_type}
+        </a>
+      ))}
+    </div>
+  )}
+
+  <div
+    style={{
+      display: "flex",
+      gap: "10px",
+      flexWrap: "wrap"
+    }}
+  >
+
+   <div className="analysis-actions">
+
+  <button
+    onClick={() =>
+      navigate(`/case/${caseData.case_id}/document-analysis`)
+    }
+  >
+    Analyze Documents
+  </button>
+
+  <button
+    onClick={() =>
+      navigate(`/case/${caseData.case_id}/statement-analysis`)
+    }
+  >
+    Analyze Statements
+  </button>
+
+</div>
+
+  </div>
+
+</div>
+              
+
+               
+
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap"
-                }}
-              >
-
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/case/${caseData.case_id}/document-analysis`
-                    )
-                  }
-                >
-                  Analyze Documents
-                </button>
-
-                <button
-                  onClick={() =>
-                    navigate(
-                      `/case/${caseData.case_id}/statement-analysis`
-                    )
-                  }
-                >
-                  Analyze Statements
-                </button>
-
-              </div>
-
-            </div>
+            
           </details>
 
 
@@ -1020,43 +1125,112 @@ export default function CaseDetails() {
 
 
           {showReport && (
-            <div style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              background: "rgba(0,0,0,0.5)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 9999
-            }}>
-              <div style={{
-                background: "#fff",
-                padding: "20px",
-                borderRadius: "10px",
-                width: "90%",
-                maxWidth: "400px"
-              }}>
-                <h3>Status Report</h3>
+  <div className="status-overlay">
 
-                {statusReport.map((item) => (
-                  <div key={item.subcategory} style={{ marginBottom: "8px" }}>
-                    <b>{item.subcategory}</b> →{" "}
-                    {item.status === "completed" ? "✅ Completed" : "❌ Pending"}
-                  </div>
-                ))}
+    <div className="status-modal">
 
-                <button
-                  style={{ marginTop: "10px" }}
-                  onClick={() => setShowReport(false)}
-                >
-                  Close
-                </button>
+      <div className="status-header">
+        <h2>Status Report</h2>
+      </div>
+
+      {(() => {
+        const completed = statusReport.filter(
+          (i) => i.status === "completed"
+        ).length;
+
+        const percentage =
+          statusReport.length > 0
+            ? (completed / statusReport.length) * 100
+            : 0;
+
+        return (
+          <>
+            <div className="progress-box">
+
+             <div className="progress-info">
+  <span>Overall Progress</span>
+
+  <span className="progress-count">
+    {Math.round(percentage)}% • {completed}/{statusReport.length}
+  </span>
+</div>
+
+              <div className="progress-bar">
+                <div
+                  className="progress-fill"
+                  style={{ width: `${percentage}%` }}
+                />
               </div>
+
             </div>
-          )}
+
+            <div className="status-grid">
+
+              {statusReport.map((item) => (
+
+                <div className="status-card" key={item.subcategory}>
+
+                  <div className="status-left">
+
+                    <div
+                      className={
+                        item.status === "completed"
+                          ? "status-icon success"
+                          : "status-icon pending"
+                      }
+                    >
+                      {item.status === "completed" ? "✓" : "!"}
+                    </div>
+
+                   <div>
+
+  <h4>
+    {item.subcategory
+      .split(" ")
+      .map(
+        word =>
+          word.charAt(0).toUpperCase() +
+          word.slice(1)
+      )
+      .join(" ")}
+  </h4>
+
+  <p
+    className={
+      item.status === "completed"
+        ? "status-pill complete"
+        : "status-pill pending-pill"
+    }
+  >
+    {item.status === "completed"
+      ? "Completed"
+      : "Pending"}
+  </p>
+
+</div>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+          </>
+        );
+      })()}
+
+      <button
+        className="close-status-btn"
+        onClick={() => setShowReport(false)}
+      >
+        Close
+      </button>
+
+    </div>
+
+  </div>
+)}
 
 
           {showUploadChoice && (

@@ -20,6 +20,10 @@ export default function DocumentAnalysis() {
 
   const [results, setResults] = useState(null);
 
+  const [search, setSearch] = useState("");
+
+const [filter, setFilter] = useState("all");
+
   // ==========================================
   // LOAD DOCUMENTS
   // ==========================================
@@ -89,6 +93,31 @@ export default function DocumentAnalysis() {
 
     }
   };
+  const imageCount = documents.filter(doc =>
+  doc.file_type?.startsWith("image")
+).length;
+
+const pdfCount = documents.filter(doc =>
+  doc.file_type === "application/pdf"
+).length;
+
+
+const filteredDocuments = documents.filter((doc) => {
+
+  const matchSearch =
+    doc.file_type
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+  if (filter === "image")
+    return matchSearch && doc.file_type.startsWith("image");
+
+  if (filter === "pdf")
+    return matchSearch && doc.file_type.includes("pdf");
+
+  return matchSearch;
+
+});
 
   return (
 
@@ -98,14 +127,72 @@ export default function DocumentAnalysis() {
 
         <div className="card">
 
-          <button
-            className="back-btn"
-            onClick={() => navigate(-1)}
-          >
-            ← Back
-          </button>
+         <div className="analysis-header">
 
-          <h2>Document Analysis</h2>
+ 
+
+  <div>
+    <h2>Document Analysis</h2>
+
+    <p className="analysis-subtitle">
+      AI powered forensic analysis for uploaded claim documents
+    </p>
+    <div className="stats-bar">
+
+  <div className="stat-box">
+    <h3>{documents.length}</h3>
+    <p>Documents</p>
+  </div>
+
+  <div className="stat-box">
+    <h3>{imageCount}</h3>
+    <p>Images</p>
+  </div>
+
+  <div className="stat-box">
+    <h3>{pdfCount}</h3>
+    <p>PDF Files</p>
+  </div>
+
+</div>
+  </div>
+
+</div>
+<div className="toolbar">
+
+  <input
+    type="text"
+    placeholder="Search documents..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
+
+  <div className="filter-buttons">
+
+    <button
+      className={filter==="all" ? "active" : ""}
+      onClick={()=>setFilter("all")}
+    >
+      All
+    </button>
+
+    <button
+      className={filter==="image" ? "active" : ""}
+      onClick={()=>setFilter("image")}
+    >
+      Images
+    </button>
+
+    <button
+      className={filter==="pdf" ? "active" : ""}
+      onClick={()=>setFilter("pdf")}
+    >
+      PDFs
+    </button>
+
+  </div>
+
+</div>
 
           {/* ================================= */}
           {/* DOCUMENT LIST */}
@@ -113,40 +200,78 @@ export default function DocumentAnalysis() {
 
           <div className="doc-grid">
 
-            {documents.map((doc) => (
+  {filteredDocuments.map((doc) => {
 
-              <div
-                key={doc.id}
-                className={`doc-card ${
-                  selectedDoc?.id === doc.id
-                    ? "selected"
-                    : ""
-                }`}
-                onClick={() => setSelectedDoc(doc)}
-              >
+    const isPdf = doc.file_type?.includes("pdf");
 
-                <img
-                  src={doc.file_url}
-                  alt="document"
-                />
+    return (
 
-                <p>{doc.file_type}</p>
+      <div
+        key={doc.id}
+        className={`doc-card ${
+          selectedDoc?.id === doc.id
+            ? "selected"
+            : ""
+        }`}
+        onClick={() => setSelectedDoc(doc)}
+      >
 
-              </div>
-            ))}
+        <div className="doc-preview">
 
-          </div>
+          {isPdf ? (
+
+            <div className="pdf-icon">
+              📄
+            </div>
+
+          ) : (
+
+            <img
+              src={doc.file_url}
+              alt="document"
+            />
+
+          )}
+
+        </div>
+
+        <div className="doc-info">
+
+          <h4>
+            {isPdf ? "PDF Document" : "Image Document"}
+          </h4>
+
+          <p>{doc.file_type}</p>
+
+        </div>
+
+        {selectedDoc?.id === doc.id && (
+
+          <span className="selected-badge">
+            ✓ Selected
+          </span>
+
+        )}
+
+      </div>
+
+    );
+
+  })}
+
+</div>
 
           <button
-            onClick={analyzeDocument}
-            disabled={loading}
-          >
-            {
-              loading
-                ? "Analyzing..."
-                : "Analyze Document"
-            }
-          </button>
+  className="analyze-btn"
+  onClick={analyzeDocument}
+  disabled={loading}
+>
+
+  {loading
+    ? "Analyzing Document..."
+    : "🔍 Analyze Selected Document"}
+
+</button>
 
           {/* ================================= */}
           {/* RESULTS */}
@@ -155,16 +280,78 @@ export default function DocumentAnalysis() {
 
           {results?.success && (
 
-            <div className="analysis-results">
+  <div className="analysis-results">
 
-              <h3>
-                Final Fraud Score:
-                {results.final_score}/100
-              </h3>
+    <div className="summary-card">
 
-              <p>
-                {results.final_verdict}
-              </p>
+      <div className="summary-left">
+
+        <h2>Overall Assessment</h2>
+
+        <h1
+          style={{
+            color:
+              results.final_score < 30
+                ? "#16a34a"
+                : results.final_score < 70
+                ? "#f59e0b"
+                : "#dc2626"
+          }}
+        >
+          {results.final_verdict}
+        </h1>
+
+      </div>
+
+      <div className="summary-right">
+
+        <div className="score-circle">
+
+          <h1>{results.final_score}</h1>
+
+          <span>/100</span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div className="summary-grid">
+
+      <div className="summary-item">
+
+        <span>Risk Level</span>
+
+        <strong>
+          {results.final_score < 30
+            ? "Low"
+            : results.final_score < 70
+            ? "Medium"
+            : "High"}
+        </strong>
+
+      </div>
+
+      <div className="summary-item">
+
+        <span>AI Modules</span>
+
+        <strong>
+          {Object.keys(results.modules).length}
+        </strong>
+
+      </div>
+
+      <div className="summary-item">
+
+        <span>Analysis Status</span>
+
+        <strong>Completed</strong>
+
+      </div>
+
+    </div>
 
 
               {/* ================================= */}
@@ -173,29 +360,37 @@ export default function DocumentAnalysis() {
 
               <div className="result-card">
 
-                <h4>AI Detection</h4>
+<div className="result-header">
 
-                <p>
+<h3>🤖 AI Detection</h3>
 
-                  <strong>Result:</strong>{" "}
+<span
+className={
+results.modules.ai_detection.label === "Genuine"
+? "badge-success"
+: "badge-danger"
+}
+>
 
-                  {
-                    results.modules.ai_detection.label
-                  }
+{results.modules.ai_detection.label}
 
-                </p>
+</span>
 
-                <p>
+</div>
 
-                  <strong>Confidence:</strong>{" "}
+<div className="result-content">
 
-                  {
-                    results.modules.ai_detection.confidence
-                  }%
+<p>
 
-                </p>
+<strong>Confidence</strong>
 
-              </div>
+{results.modules.ai_detection.confidence}%
+
+</p>
+
+</div>
+
+</div>
 
               {results?.modules?.face_verification && (
 
@@ -247,29 +442,43 @@ export default function DocumentAnalysis() {
 
               <div className="result-card">
 
-                <h4>Metadata</h4>
+  <div className="result-header">
 
-                <p>
-                  Score:
-                  {results.modules.metadata.score}
-                </p>
+    <h3>📋 Metadata Analysis</h3>
 
-                <p>
-                  Verdict:
-                  {results.modules.metadata.verdict}
-                </p>
+    <span
+      className={
+        results.modules.metadata.verdict === "Clean"
+          ? "badge-success"
+          : "badge-warning"
+      }
+    >
+      {results.modules.metadata.verdict}
+    </span>
 
-                {
-                  results.modules.metadata.reasons?.map(
-                    (reason, index) => (
-                      <p key={index}>
-                        • {reason}
-                      </p>
-                    )
-                  )
-                }
+  </div>
 
-              </div>
+  <div className="result-content">
+
+    <p>
+      <strong>Score:</strong>{" "}
+      {results.modules.metadata.score}
+    </p>
+
+    {results.modules.metadata.reasons?.map((reason, i) => (
+
+      <div
+        key={i}
+        className="reason-item"
+      >
+        • {reason}
+      </div>
+
+    ))}
+
+  </div>
+
+</div>
 
               {/* ================================= */}
               {/* ELA */}
@@ -277,19 +486,32 @@ export default function DocumentAnalysis() {
 
               <div className="result-card">
 
-                <h4>ELA</h4>
+  <div className="result-header">
 
-                <p>
-                  Score:
-                  {results.modules.ela.score}
-                </p>
+    <h3>🖼 Error Level Analysis</h3>
 
-                <p>
-                  Verdict:
-                  {results.modules.ela.verdict}
-                </p>
+    <span
+      className={
+        results.modules.ela.verdict === "Clean"
+          ? "badge-success"
+          : "badge-warning"
+      }
+    >
+      {results.modules.ela.verdict}
+    </span>
 
-                <div className="image-grid">
+  </div>
+
+  <div className="result-content">
+
+    <p>
+      <strong>Score:</strong>{" "}
+      {results.modules.ela.score}
+    </p>
+
+  </div>
+
+  <div className="image-grid">
 
                   <div>
 
@@ -350,18 +572,17 @@ export default function DocumentAnalysis() {
 
               <div className="result-card">
 
-                <h4>Copy Move</h4>
+               <h3>🧩 Copy Move Detection</h3>
 
-                <p>
-                  Score:
-                  {results.modules.copy_move.score}
-                </p>
+               <p>
+  <strong>Score:</strong>{" "}
+  {results.modules.copy_move.score}
+</p>
 
-                <p>
-                  Verdict:
-                  {results.modules.copy_move.verdict}
-                </p>
-
+<p>
+  <strong>Verdict:</strong>{" "}
+  {results.modules.copy_move.verdict}
+</p>
                 <div className="image-grid">
 
                   <div>
@@ -385,17 +606,17 @@ export default function DocumentAnalysis() {
 
               <div className="result-card">
 
-                <h4>Photo Replacement Detection</h4>
+                <h3>👤 Face Tampering Detection</h3>
 
-                <p>
-                  Score:
-                  {results.modules.face_tamper.score}
-                </p>
+               <p>
+  <strong>Score:</strong>{" "}
+  {results.modules.face_tamper.score}
+</p>
 
-                <p>
-                  Verdict:
-                  {results.modules.face_tamper.verdict}
-                </p>
+<p>
+  <strong>Verdict:</strong>{" "}
+  {results.modules.face_tamper.verdict}
+</p>
 
                 <div className="image-grid">
 

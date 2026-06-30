@@ -152,50 +152,6 @@ export default function Interview(props) {
       }
     }, 30000);
   };
-
-  /* ---------------- CAMERA SWITCH ---------------- */
-
-  const switchCamera = async () => {
-    try {
-      if (!streamRef.current) return;
-
-      // Get current tracks
-      const oldStream = streamRef.current;
-      const audioTracks = oldStream.getAudioTracks();
-
-      // Toggle camera
-      const newMode = cameraMode === "user" ? "environment" : "user";
-      setCameraMode(newMode);
-
-      // Get ONLY video stream
-      const newVideoStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: newMode }
-      });
-
-      const newVideoTrack = newVideoStream.getVideoTracks()[0];
-
-      // Remove old video track
-      oldStream.getVideoTracks().forEach((t) => t.stop());
-      oldStream.removeTrack(oldStream.getVideoTracks()[0]);
-
-      // Add new video track
-      oldStream.addTrack(newVideoTrack);
-
-      // Update video element
-      if (videoRef.current) {
-        videoRef.current.srcObject = oldStream;
-        await videoRef.current.play();
-      }
-
-      // IMPORTANT: DO NOT TOUCH AUDIO CONTEXT
-      // IMPORTANT: DO NOT restart startAudio()
-
-    } catch (err) {
-      console.error("Camera switch failed", err);
-      alert("Camera switch not supported");
-    }
-  };
-
   /* ---------------- AUDIO ---------------- */
 
   const startAudio = async () => {
@@ -282,10 +238,12 @@ export default function Interview(props) {
         })
       });
 
-      const data = await res.json();
+     const data = await res.json();
 
-      interviewIdRef.current = data.id;
-      setAddress(data.location_text);
+console.log("Interview start response:", data);
+
+interviewIdRef.current = data.id;
+setAddress(data.location_text);
 
       wsRef.current = connectInterview(data.id);
 
@@ -364,12 +322,38 @@ export default function Interview(props) {
       <div className="container">
         <div className="card interview-box">
 
-          <h2>Interview Recording</h2>
+         <div className="interview-header">
+  <div>
+    <h2>AI Claim Interview</h2>
+  </div>
 
-          <div className="video-box">
-            <video ref={videoRef} autoPlay muted playsInline />
-          </div>
+  <div className="header-right">
+    Record and verify insurance claim details
+  </div>
+</div>
 
+<div className="case-info">
+  <div>
+    <span>Case ID</span>
+    <h3>{caseData.case_id}</h3>
+  </div>
+
+  <div>
+    <span>Insurance</span>
+    <h3>{caseData.claim_type || caseData.category}</h3>
+  </div>
+
+  <div>
+    <span>Category</span>
+    <h3>{caseData.subcategory || caseData.category}</h3>
+  </div>
+</div>
+
+       {started && (
+  <div className="video-box">
+    <video ref={videoRef} autoPlay muted playsInline />
+  </div>
+)}
           {address && (
             <p className="location-text">
               📍 {address}
@@ -389,24 +373,19 @@ export default function Interview(props) {
           ) : (
             <>
               <div className="recording-indicator">
-                <div className="recording-dot"></div>
-                Recording...
-              </div>
-
+  <div className="recording-dot"></div>
+  <span>Recording In Progress</span>
+</div>
               <div className="action-buttons">
-                <button className="switch-btn" onClick={switchCamera}>
-                  Switch Camera
-                </button>
-
-                <button className="end-btn" onClick={endInterview}>
-                  End Interview
-                </button>
-              </div>
+  <button className="end-btn" onClick={endInterview}>
+    End Interview
+  </button>
+</div>
             </>
           )}
 
           <div className="transcript-box section-card">
-            <h3>Transcript</h3>
+            <h3> Live Transcript</h3>
 
             {transcript.map((t, i) => (
               <p key={i}>{t}</p>

@@ -18,7 +18,7 @@ const motorCategories = [
 
 export default function NewCase({ setPage, setCurrentCase }) {
 
-  const [claimType, setClaimType] = useState(null);
+const [claimType, setClaimType] = useState("");
   
   const [subcategory, setSubcategory] = useState("");
   const [subcategoryDetail, setSubcategoryDetail] = useState("");
@@ -85,19 +85,18 @@ export default function NewCase({ setPage, setCurrentCase }) {
 
           <h2>New Case</h2>
 
-          {!claimType && (
-            <div className="case-buttons">
-              <button onClick={() => setClaimType("health")}>
-                Health Insurance
-              </button>
-              <button onClick={() => setClaimType("motor")}>
-                Motor Insurance
-              </button>
-            </div>
-          )}
+          
 
-          {claimType && (
+         
             <>
+            <select
+  value={claimType}
+  onChange={(e) => setClaimType(e.target.value)}
+>
+  <option value="">Select Insurance Type</option>
+  <option value="health">Health Insurance</option>
+  <option value="motor">Motor Insurance</option>
+</select>
               <input
                 placeholder="Enter Case ID"
                 value={caseId}
@@ -140,7 +139,7 @@ export default function NewCase({ setPage, setCurrentCase }) {
                 Start Interview
               </button>
             </>
-          )}
+          
 
         </div>
       </div>

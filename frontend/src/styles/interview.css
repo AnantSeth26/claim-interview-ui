@@ -1,20 +1,24 @@
 .interview-box {
-  text-align: center;
-  max-width: 600px;
+  width: 95%;
+  max-width: 980px;   /* Increase from 600px */
   margin: auto;
+  text-align: center;
+  padding: 30px;
 }
 
 /* 🎥 FIX VIDEO SIZE */
 .video-box {
-  margin: 20px 0;
+  margin: 8px 0;
   display: flex;
   justify-content: center;
 }
 
 .video-box video {
   width: 100%;
-  max-width: 500px;   /* 🔥 FIX */
-  border-radius: 12px;
+  max-width: 700px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 16px;
 }
 
 /* 📍 LOCATION */
@@ -37,43 +41,43 @@
 
 
 /* ---------------- ACTION BUTTON GROUP ---------------- */
-
 .action-buttons {
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  align-items: center;
   margin-top: 15px;
+  margin-bottom: 20px;
 }
 
-/* Equal width buttons */
-.action-buttons button {
-  flex: 1;
-}
-
-/* ---------------- SWITCH CAMERA BUTTON ---------------- */
-
-.switch-btn {
-  background: #f1f5f9;
-  color: #111;
-}
-
-.switch-btn:hover {
-  background: #e2e8f0;
-}
 
 /* ---------------- END BUTTON (DANGER STYLE) ---------------- */
 
 .end-btn {
-  background: #ef4444;
+  background: #ef5a67;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  width: 440px;
+  height: 46px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: block;
+  margin: 12px auto 0;
 }
-
-.end-btn:hover {
-  background: #dc2626;
-}
-
 /* ---------------- START BUTTON ---------------- */
 
 .start-btn {
+  width: 100%;
   background: #2563eb;
+  margin-top: 8px;
+  margin-bottom: 18px;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .start-btn:hover {
@@ -83,20 +87,24 @@
 /* ---------------- RECORDING STATE INDICATOR ---------------- */
 
 .recording-indicator {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 10px;
-  color: #ef4444;
-  font-weight: 500;
+  gap: 8px;
+  padding: 10px 20px;
+  margin: 12px auto 8px;
+  background: #fdecef;
+  border: 1px solid #f7c6d0;
+  border-radius: 999px;
+  color: #ef5a67;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 /* blinking dot */
 .recording-dot {
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
+  width: 10px;
+  height: 10px;
+  background: #ef5a67;
   border-radius: 50%;
   animation: blink 1s infinite;
 }
@@ -129,15 +137,61 @@
   margin-top: 20px;
   margin-bottom: 20px;
 }
+/* ===== AI Claim Interview Header ===== */
 
-.end-btn {
-  flex: 0 0 auto;
-  padding: 10px 24px;
-  border-radius: 10px;
+.interview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 25px;
+}
+
+.interview-header h2 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.header-right {
+  color: #6b7280;
   font-size: 14px;
-  color: white;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  min-width: 160px;
+  text-align: right;
+  max-width: 240px;
+}
+
+.case-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 200px;      /* Adjust this value if needed */
+  margin: 25px 0;
+  text-align: center;
+}
+
+.case-info span {
+  display: block;
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.case-info h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+@media (max-width: 700px) {
+  .interview-header,
+  .case-info {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header-right {
+    text-align: left;
+    max-width: 100%;
+  }
 }

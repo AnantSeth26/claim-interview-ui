@@ -5,10 +5,9 @@ import "../styles/dashboard.css";
 import { LoadingContext } from "../context/LoadingContext";
 
 export default function Dashboard() {
-
   const [cases, setCases] = useState([]);
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  const [selectedDate, setSelectedDate] = useState("");
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
@@ -30,7 +29,6 @@ export default function Dashboard() {
         );
         setCases(unique);
       }
-
     } finally {
       setLoading(false);
     }
@@ -40,14 +38,18 @@ export default function Dashboard() {
     navigate(`/case/${c.id}`, { state: c });
   };
 
-  const filteredCases = cases
-    .filter((c) =>
-      c.case_id.toLowerCase().includes(search.toLowerCase())
-    )
-    .filter((c) => {
-      if (filterType === "all") return true;
-      return c.claim_type === filterType;
-    });
+ const filteredCases = cases
+  .filter((c) =>
+    c.case_id.toLowerCase().includes(search.toLowerCase())
+  )
+  .filter((c) => {
+    if (!selectedDate) return true;
+
+    return (
+      new Date(c.created_at).toISOString().split("T")[0] === selectedDate
+    );
+  })
+  .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   return (
     <div className="page">
@@ -64,26 +66,22 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* 🔴 STEP 1 — GROUP SEARCH + FILTER */}
           <div className="section-card">
             <div className="flex-row">
-              <input
-                className="search-box"
-                placeholder="Search case ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+  <input
+    className="search-box"
+    placeholder="Search case ID..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
 
-              <select
-                className="filter-box"
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-              >
-                <option value="all">All</option>
-                <option value="health">Health</option>
-                <option value="motor">Motor</option>
-              </select>
-            </div>
+  <input
+    type="date"
+    className="filter-box"
+    value={selectedDate}
+    onChange={(e) => setSelectedDate(e.target.value)}
+  />
+</div>
           </div>
 
           <h3>Previous Cases</h3>

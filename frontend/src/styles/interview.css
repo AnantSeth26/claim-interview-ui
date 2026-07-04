@@ -157,7 +157,8 @@
   color: #6b7280;
   font-size: 14px;
   text-align: right;
-  max-width: 240px;
+  white-space: nowrap;
+  max-width: none;
 }
 
 .case-info {

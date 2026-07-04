@@ -135,9 +135,12 @@ const [claimType, setClaimType] = useState("");
                 <option value="hi">Hindi</option>
               </select>
 
-              <button onClick={startCase}>
-                Start Interview
-              </button>
+              <button
+  className="start-interview-btn"
+  onClick={startCase}
+>
+  Start Interview
+</button>
             </>
           
 

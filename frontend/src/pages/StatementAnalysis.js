@@ -104,9 +104,7 @@ export default function StatementAnalysis() {
             ← Back
           </button>
 
-          <h2>
-            Bank Statement Analysis
-          </h2>
+          <h2>Document Statement Analysis</h2>
 
           <div className="doc-grid">
 

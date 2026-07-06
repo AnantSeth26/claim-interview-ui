@@ -23,14 +23,20 @@ import {
   FaCar,
   FaClock,
   FaCheckCircle,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaUser,
+  FaKey,
+  FaSignOutAlt
 } from "react-icons/fa";
 import AdminLayout from "./AdminLayout";
+
+import AdminSidebar from "../components/AdminSidebar";
 
 export default function AdminDashboard() {
 
   const [cases, setCases] = useState([]);
   const [file, setFile] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // 🔍 SEARCH
   const [search, setSearch] = useState("");
@@ -53,17 +59,34 @@ export default function AdminDashboard() {
     loadCases();
   }, [claimType]);
 
-  const loadCases = async () => {
-    const res = await getAllCases({
-      claim_type: claimType
-    });
+ const loadCases = async () => {
+  const res = await getAllCases({
+    claim_type: claimType
+  });
 
-    if (res.cases) setCases(res.cases);
-  };
+  console.log("All Cases:", res.cases);
+
+  if (res.cases) setCases(res.cases);
+};
 
   const openCase = (c) => {
     navigate(`/case/${c.id}`, { state: c });
   };
+  const handleSearch = (e) => {
+  if (e.key !== "Enter") return;
+
+  const foundCase = cases.find((c) =>
+    c.case_id?.toLowerCase() === search.toLowerCase()
+  );
+
+  if (foundCase) {
+    navigate(`/case/${foundCase.id}`, {
+      state: foundCase,
+    });
+  } else {
+    alert("Case not found");
+  }
+};
 
   // 📁 FILE SELECT
   const handleFileChange = (e) => {
@@ -141,50 +164,38 @@ const investigatorData = Object.entries(
 .sort((a, b) => b[1] - a[1])
 .slice(0, 5);
 
+ const pendingCases = cases.filter(
+  c => c.case_status?.toLowerCase() === "pending"
+).length;
 
+const completedCases = cases.filter(
+  c => c.case_status?.toLowerCase() === "completed"
+).length;
+
+const fraudCases = cases.filter(
+  c => c.fraud_flag
+).length;
+
+const validTimeLag = cases.filter(c => c.time_lag != null);
+
+const avgProcessing =
+  validTimeLag.length > 0
+    ? (
+        validTimeLag.reduce(
+          (sum, c) => sum + Number(c.time_lag),
+          0
+        ) / validTimeLag.length
+      ).toFixed(1)
+    : "0";
+    const today = new Date().toISOString().split("T")[0];
+
+const todaysCases = cases.filter(c =>
+  c.created_at?.startsWith(today)
+).length;
   return (
     <div className="admin-layout">
 
-  <aside className="sidebar">
-
-    <h2>ClaimIQ</h2>
-
-    <div
-  className="menu-item active"
-  onClick={() => navigate("/dashboard")}
->
-  Dashboard
-</div>
-
-<div
-  className="menu-item"
-  onClick={() => navigate("/cases")}
->
-  Cases
-</div>
-
-<div
-  className="menu-item"
-  onClick={() => navigate("/investigators")}
->
-  Investigators
-</div>
-
-<div
-  className="menu-item"
-  onClick={() => navigate("/analytics")}
->
-  Analytics
-</div>
-
-<div
-  className="menu-item"
-  onClick={() => navigate("/reports")}
->
-  Reports
-</div>
-
-  </aside>
+  <AdminSidebar />
 
   <main className="main-content">
 
@@ -202,27 +213,64 @@ const investigatorData = Object.entries(
   <div className="topbar-right">
 
     <input
-      className="quick-search"
-      type="text"
-      placeholder="🔍 Search Case ID..."
-      value={search}
-      onChange={(e) => setSearch(e.target.value)}
-    />
+  className="quick-search"
+  type="text"
+  placeholder="🔍 Search Case ID..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  onKeyDown={handleSearch}
+/>
       <div className="notification-bell">
   🔔
-  <span className="notification-badge">3</span>
+  
 </div>
 
     <div className="admin-profile">
-      <div>
-        <h4>Admin</h4>
-        <span>Claims Manager</span>
+
+  <div>
+    <h4>Admin</h4>
+    <span>Claims Manager</span>
+  </div>
+
+  <div
+    className="avatar"
+    onClick={() => setShowProfileMenu(!showProfileMenu)}
+    style={{ cursor: "pointer", position: "relative" }}
+  >
+    A
+  </div>
+
+  {showProfileMenu && (
+    <div className="profile-dropdown">
+
+      <div className="profile-item">
+        <FaUser />
+        <span>Admin</span>
       </div>
 
-      <div className="avatar">
-        A
+      <div
+  className="profile-item"
+  onClick={() => navigate("/forgot-password")}
+>
+  <FaKey />
+  <span>Update Password</span>
+</div>
+
+      <div
+        className="profile-item"
+        onClick={() => {
+          localStorage.clear();
+          navigate("/");
+        }}
+      >
+        <FaSignOutAlt />
+        <span>Logout</span>
       </div>
+
     </div>
+  )}
+
+</div>
 
   </div>
 
@@ -230,13 +278,23 @@ const investigatorData = Object.entries(
 
 </div>
           <div className="stats-grid">
- <div className="stat-card total-card">
+ <div
+  className="stat-card total-card"
+  onClick={() => navigate("/cases")}
+  style={{ cursor: "pointer" }}
+>
   <FaFileAlt className="stat-icon" />
   <h3>{cases.length}</h3>
   <p>Total Cases</p>
 </div>
 
-<div className="stat-card assigned-card">
+<div
+  className="stat-card assigned-card"
+  onClick={() =>
+    navigate("/cases?filter=assigned")
+  }
+  style={{ cursor: "pointer" }}
+>
   <FaUserCheck className="stat-icon" />
   <h3>
     {cases.filter(c => c.investigator_name).length}
@@ -256,7 +314,13 @@ const investigatorData = Object.entries(
   <p>Districts Covered</p>
 </div>
 
-<div className="stat-card motor-card">
+<div
+  className="stat-card motor-card"
+  onClick={() =>
+    navigate("/cases?claim_type=motor")
+  }
+  style={{ cursor: "pointer" }}
+>
   <FaCar className="stat-icon" />
   <h3>
     {
@@ -268,18 +332,36 @@ const investigatorData = Object.entries(
   <p>Motor Claims</p>
 </div>
 
-<div className="stat-card pending-card">
-  <h3>12</h3>
+<div
+  className="stat-card pending-card"
+  onClick={() =>
+    navigate("/cases?status=pending")
+  }
+  style={{ cursor: "pointer" }}
+>
+  <h3>{pendingCases}</h3>
   <p>Pending Verification</p>
 </div>
 
-<div className="stat-card fraud-card">
-  <h3>4</h3>
-  <p>Fraud Alerts</p>
+<div
+  className="stat-card fraud-card"
+  onClick={() =>
+    navigate("/cases?today=true")
+  }
+  style={{ cursor: "pointer" }}
+>
+  <h3>{todaysCases}</h3>
+  <p>Today's Cases</p>
 </div>
 
-<div className="stat-card completed-card">
-  <h3>28</h3>
+<div
+  className="stat-card completed-card"
+  onClick={() =>
+    navigate("/cases?status=completed")
+  }
+  style={{ cursor: "pointer" }}
+>
+  <h3>{completedCases}</h3>
   <p>Completed Cases</p>
 </div>
 
@@ -335,102 +417,9 @@ const investigatorData = Object.entries(
 </div>
 
           {/* 📤 UPLOAD */}
-          <div className="upload-section">
-
-  <h3>Bulk Case Import</h3>
-
-  <input
-    type="file"
-    accept=".xlsx"
-    onChange={handleFileChange}
-  />
-
-  <button
-    className="upload-btn"
-    onClick={handleUpload}
-  >
-    Upload Excel File
-  </button>
-
-</div>
-
-          {/* 🔴 STEP 1 — GROUP FILTERS */}
-          <div className="section-card">
-            <h3>Filters</h3>
-
-            <div className="grid-3">
-             
-
-              <input
-                placeholder="District"
-                value={districtFilter}
-                onChange={(e) => setDistrictFilter(e.target.value)}
-              />
-
-              <input
-                placeholder="Police Station"
-                value={policeFilter}
-                onChange={(e) => setPoliceFilter(e.target.value)}
-              />
-
-              <input
-                placeholder="Investigator"
-                value={investigatorFilter}
-                onChange={(e) => setInvestigatorFilter(e.target.value)}
-              />
-
-              <select
-                value={claimType}
-                onChange={(e) => setClaimType(e.target.value)}
-              >
-                <option value="">All Types</option>
-                <option value="health">Health</option>
-                <option value="motor">Motor</option>
-              </select>
-            </div>
-          </div>
+         
 
           
-
-          <div className="date-grid">
-
-  <div>
-    <label>Allocation From</label>
-    <input
-      type="date"
-      value={allocationFrom}
-      onChange={(e) => setAllocationFrom(e.target.value)}
-    />
-  </div>
-
-  <div>
-    <label>Allocation To</label>
-    <input
-      type="date"
-      value={allocationTo}
-      onChange={(e) => setAllocationTo(e.target.value)}
-    />
-  </div>
-
-  <div>
-    <label>FIR From</label>
-    <input
-      type="date"
-      value={firFrom}
-      onChange={(e) => setFirFrom(e.target.value)}
-    />
-  </div>
-
-  <div>
-    <label>FIR To</label>
-    <input
-      type="date"
-      value={firTo}
-      onChange={(e) => setFirTo(e.target.value)}
-    />
-  </div>
-
-</div>
 
          {/* <div className="table-header">
   <h3>All Cases</h3>

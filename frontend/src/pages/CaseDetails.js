@@ -390,7 +390,14 @@ export default function CaseDetails() {
 )}
           {caseData.claim_type === "motor" && (
                 <div style={{ marginBottom: "15px" }}>
-                  <label>Select Subcategory:</label>
+                  <label
+  style={{
+    fontWeight: "700",
+    fontSize: "22px"
+  }}
+>
+  Select Subcategory :
+</label>
 
                   <select
                     value={subcategory}
@@ -542,7 +549,7 @@ export default function CaseDetails() {
              <div className="evidence-card">
 
   <div className="evidence-header">
-    <span className="evidence-icon">🎥</span>
+    <span className="evidence-icon"></span>
 
     <div>
       <h3>Videos</h3>
@@ -670,7 +677,7 @@ export default function CaseDetails() {
              <div className="evidence-card">
 
   <div className="evidence-header">
-    <span className="evidence-icon">📝</span>
+    <span className="evidence-icon"></span>
 
     <div>
       <h3>Interview Transcript</h3>
@@ -802,10 +809,19 @@ export default function CaseDetails() {
                 </div>
               )}
 {/* 📄 DOCUMENT SECTION */}
-<div className="evidence-card">
+</div>
+</details>
+          <details className="section-card accordion-card">
+
+  <summary>Documents</summary>
+
+  <div className="accordion-content">
+
+      {/* paste your entire Documents block here */}
+      <div className="evidence-card">
 
   <div className="evidence-header">
-    <span className="evidence-icon">📄</span>
+    <span className="evidence-icon"></span>
 
     <div>
       <h3>Documents</h3>
@@ -820,20 +836,52 @@ export default function CaseDetails() {
   )}
 
   {documents.length > 0 && (
-    <div className="doc-list">
-      {documents.map((doc, i) => (
-        <a
-          key={i}
-          href={doc.file_url}
-          target="_blank"
-          rel="noreferrer"
-          className="doc-item"
-        >
-          📄 {doc.file_type}
-        </a>
-      ))}
-    </div>
-  )}
+  <div className="doc-list">
+
+    {documents.map((doc, i) => {
+
+      const fileName =
+        doc.file_name ||
+        doc.original_name ||
+        doc.filename ||
+        doc.file_url.split("/").pop();
+
+      return (
+        <div key={i} className="doc-card">
+
+          <div className="doc-info">
+    <span>📄</span>
+    <span>{fileName}</span>
+</div>
+
+          <div className="doc-actions">
+
+            <a
+              href={doc.file_url}
+              target="_blank"
+              rel="noreferrer"
+              className="view-btn"
+            >
+              View
+            </a>
+
+            <a
+              href={doc.file_url}
+              download
+              className="download-btn"
+            >
+              Download
+            </a>
+
+          </div>
+
+        </div>
+      );
+
+    })}
+
+  </div>
+)}
 
   <div
     style={{
@@ -865,15 +913,9 @@ export default function CaseDetails() {
 
   </div>
 
+  </div>
 </div>
-              
-
-               
-
-              </div>
-
-            
-          </details>
+</details>
 
 
           <details className="section-card accordion-card">
@@ -897,6 +939,15 @@ export default function CaseDetails() {
         <h4>{log.action.replaceAll("_", " ")}</h4>
 
         <p>{log.description}</p>
+        <p
+  style={{
+    color: "#64748b",
+    fontWeight: 500,
+    marginTop: "6px"
+  }}
+>
+  By: {log.created_by || "System"}
+</p>
 
         <small>
           {formatToIST(log.created_at)}
@@ -911,19 +962,7 @@ export default function CaseDetails() {
             </div>
           </details> 
 
-         <div className="remarks-card">
-  <h3>Remarks</h3>
-
-  {remarks.length === 0 ? (
-    <p>No remarks available</p>
-  ) : (
-    remarks.map((r) => (
-      <div key={r.id} className="remark-item">
-        <p>{r.text}</p>
-      </div>
-    ))
-  )}
-</div>
+         
 
          <div className="remarks-card">
   <h3>Remarks</h3>
@@ -931,7 +970,12 @@ export default function CaseDetails() {
   {remarks.length === 0 ? (
     <p>No remarks available</p>
   ) : (
-    remarks.map((r) => (
+    remarks
+  .sort(
+    (a, b) =>
+      new Date(b.created_at) - new Date(a.created_at)
+  )
+  .map((r) => (
       <div key={r.id} className="remark-item">
 
         <p className="remark-text">
@@ -942,16 +986,7 @@ export default function CaseDetails() {
   Added by {r.created_by || "Unknown"}
 </p>
 
-        <button
-          className="remark-edit-btn"
-          onClick={() => {
-            setEditingRemarkId(r.id);
-            setRemarkText(r.text);
-            setShowRemarkModal(true);
-          }}
-        >
-          Edit
-        </button>
+        
 
       </div>
     ))
@@ -1072,14 +1107,31 @@ export default function CaseDetails() {
                 width: "90%",
                 maxWidth: "400px"
               }}>
-                <h3>Add Remark</h3>
+                <h3
+  style={{
+    margin: "0 0 6px 0",
+    color: "#fff"
+  }}
+>
+  Add Remark
+</h3>
 
-                <textarea
-                  placeholder="Enter remark..."
-                  value={remarkText}
-                  onChange={(e) => setRemarkText(e.target.value)}
-                  style={{ width: "100%", marginBottom: "10px" }}
-                />
+               <textarea
+  placeholder="Enter remark..."
+  value={remarkText}
+  onChange={(e) => setRemarkText(e.target.value)}
+  style={{
+    width: "100%",
+    height: "180px",
+    padding: "12px",
+    marginBottom: "10px",
+    fontSize: "16px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    resize: "vertical",
+    boxSizing: "border-box"
+  }}
+/>
 
                <button
   onClick={async () => {

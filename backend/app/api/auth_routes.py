@@ -3,7 +3,8 @@ from app.services.auth_service import (
     register_user,
     send_otp,
     verify_otp,
-    login_user
+    login_user,
+    reset_password
 )
 from app.models.schemas import RegisterRequest, LoginRequest
 
@@ -42,3 +43,10 @@ def login(data: LoginRequest):
     )
 
     return result
+@router.post("/reset-password")
+def reset(data: dict):
+
+    return reset_password(
+        data["phone_number"],
+        data["password"]
+    )

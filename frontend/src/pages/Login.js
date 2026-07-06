@@ -1,4 +1,3 @@
-import React, { useState, useContext } from "react";
 import {
   FaPhone,
   FaLock,
@@ -10,6 +9,7 @@ import { register, login } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import { LoadingContext } from "../context/LoadingContext";
+import React, { useState, useContext, useEffect } from "react";
 
 export default function Login() {
   const [phone, setPhone] = useState("");
@@ -22,6 +22,7 @@ export default function Login() {
   const [darkMode, setDarkMode] = useState(true);
 
   const navigate = useNavigate();
+  const [rememberMe, setRememberMe] = useState(false);
   const { setLoading } = useContext(LoadingContext);
     const getPasswordStrength = () => {
     if (password.length < 6) {
@@ -43,6 +44,18 @@ export default function Login() {
       color: "#22c55e"
     };
   };
+   
+  useEffect(() => {
+  const rememberedUser = JSON.parse(
+    localStorage.getItem("rememberMe")
+  );
+
+  if (rememberedUser) {
+    setPhone(rememberedUser.phone);
+    setPassword(rememberedUser.password);
+    setRememberMe(true);
+  }
+}, []);
 
   const handleSubmit = async () => {
     if (!phone.trim()) {
@@ -113,6 +126,17 @@ export default function Login() {
       const res = await login(phone, password);
 
       if (res.user) {
+        if (rememberMe) {
+  localStorage.setItem(
+    "rememberMe",
+    JSON.stringify({
+      phone,
+      password,
+    })
+  );
+} else {
+  localStorage.removeItem("rememberMe");
+}
         localStorage.setItem(
           "user",
           JSON.stringify(res.user)
@@ -176,38 +200,35 @@ export default function Login() {
             automation.
           </p>
 
-          <div className="features">
-  <div className="feature-card">
-    ✓ Fraud Detection
+         
+
+<div className="feature-list">
+
+  <div className="feature-item">
+    ✓ AI Fraud Detection
   </div>
 
-  <div className="feature-card">
-    ✓ AI Analysis
+  <div className="feature-item">
+    ✓ Document Intelligence
   </div>
 
-  <div className="feature-card">
-    ✓ Claim Verification
+  <div className="feature-item">
+    ✓ Vehicle Verification
   </div>
+
+  <div className="feature-item">
+    ✓ Speech Analysis
+  </div>
+
+  <div className="feature-item">
+    ✓ Real-time Risk Scoring
+  </div>
+
+
 </div>
 <div className="ai-status">
   <span className="status-dot"></span>
   AI Fraud Engine Active
-</div>
-<div className="stats">
-  <div className="stat-card">
-    <h3>10K+</h3>
-    <p>Claims Processed</p>
-  </div>
-
-  <div className="stat-card">
-    <h3>98%</h3>
-    <p>Fraud Detection</p>
-  </div>
-
-  <div className="stat-card">
-    <h3>24/7</h3>
-    <p>AI Monitoring</p>
-  </div>
 </div>
         </div>
 
@@ -297,13 +318,23 @@ export default function Login() {
           )}
           <div className="options-row">
   <label className="remember-me">
-    <input type="checkbox" />
-    Remember Me
-  </label>
+  <input
+    type="checkbox"
+    checked={rememberMe}
+    onChange={(e) =>
+      setRememberMe(e.target.checked)
+    }
+  />
+  Remember Me
+</label>
 
-  <span className="forgot-password">
-    Forgot Password?
-  </span>
+  <span
+  className="forgot-password"
+  style={{ cursor: "pointer" }}
+  onClick={() => navigate("/forgot-password")}
+>
+  Forgot Password?
+</span>
 </div>
           <button
   onClick={handleSubmit}

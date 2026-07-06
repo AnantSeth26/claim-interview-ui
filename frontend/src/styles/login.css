@@ -487,6 +487,32 @@ overflow: hidden;
   color: #0f172a;
 }
 
+.feature-list{
+    margin-top:40px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.feature-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:white;
+    font-size:15px;
+    font-weight:600;
+    padding:14px 18px;
+    border-radius:12px;
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.12);
+    width:fit-content;
+    transition:.25s;
+}
+
+.feature-item:hover{
+    transform:translateX(6px);
+    background:rgba(255,255,255,.14);
+}
 @media (max-width: 900px) {
   .login-container {
     flex-direction: column;

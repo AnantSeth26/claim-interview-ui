@@ -255,6 +255,24 @@ export async function analyzeStatement(documentId) {
   return res.json();
 }
 
+export async function resetPassword(phone, password) {
+  const res = await fetch(
+    `${BASE}/auth/reset-password`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        phone_number: phone,
+        password: password
+      })
+    }
+  );
+
+  return res.json();
+}
+
 
 // export async function sendOtp(phone) {
 //   const res = await fetch(`${BASE}/auth/send-otp`, {

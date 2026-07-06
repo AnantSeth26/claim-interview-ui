@@ -177,3 +177,33 @@ def login_user(
         "user": user,
         "token": token
     }
+# ---------------- RESET PASSWORD ----------------
+
+def reset_password(phone_number, password):
+
+    result = (
+        supabase
+        .table("users")
+        .select("*")
+        .eq("phone_number", phone_number)
+        .execute()
+    )
+
+    if not result.data:
+        return {
+            "error": "Phone number not registered"
+        }
+
+    (
+        supabase
+        .table("users")
+        .update({
+            "password_hash": hash_password(password)
+        })
+        .eq("phone_number", phone_number)
+        .execute()
+    )
+
+    return {
+        "message": "Password updated successfully"
+    }

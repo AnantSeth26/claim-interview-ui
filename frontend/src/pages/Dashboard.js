@@ -7,8 +7,9 @@ import { LoadingContext } from "../context/LoadingContext";
 export default function Dashboard() {
   const [cases, setCases] = useState([]);
   const [search, setSearch] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const { setLoading } = useContext(LoadingContext);
@@ -43,13 +44,26 @@ export default function Dashboard() {
     c.case_id.toLowerCase().includes(search.toLowerCase())
   )
   .filter((c) => {
-    if (!selectedDate) return true;
+  if (!startDate && !endDate) return true;
 
-    return (
-      new Date(c.created_at).toISOString().split("T")[0] === selectedDate
-    );
-  })
-  .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const caseDate = new Date(c.created_at);
+
+  if (startDate && caseDate < new Date(startDate)) {
+    return false;
+  }
+
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    if (caseDate > end) {
+      return false;
+    }
+  }
+
+  return true;
+})
+  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
   return (
     <div className="page">
@@ -62,12 +76,11 @@ export default function Dashboard() {
               className="new-case-btn"
               onClick={() => navigate("/new-case")}
             >
-              + New Case
+               New Case
             </button>
           </div>
 
-          <div className="section-card">
-            <div className="flex-row">
+          <div className="section-card"> 
   <input
     className="search-box"
     placeholder="Search case ID..."
@@ -75,14 +88,29 @@ export default function Dashboard() {
     onChange={(e) => setSearch(e.target.value)}
   />
 
-  <input
-    type="date"
-    className="filter-box"
-    value={selectedDate}
-    onChange={(e) => setSelectedDate(e.target.value)}
-  />
+  <div className="date-range">
+    <div className="date-field">
+      <label>From Date</label>
+      <input
+        type="date"
+        className="filter-box"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+      />
+    </div>
+
+    <div className="date-field">
+      <label>To Date</label>
+      <input
+        type="date"
+        className="filter-box"
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+      />
+    </div>
+  </div>
 </div>
-          </div>
+          
 
           <h3>Previous Cases</h3>
 

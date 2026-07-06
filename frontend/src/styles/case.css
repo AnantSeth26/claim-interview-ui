@@ -855,3 +855,19 @@ border-color:#2563eb;
 }
 
 }
+.start-interview-btn {
+  width: 100%;
+  padding: 14px 20px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.start-interview-btn:hover {
+  background: #1d4ed8;
+}

@@ -6,16 +6,19 @@ import AdminLayout from "./AdminLayout";
 export default function Cases() {
   const [cases, setCases] = useState([]);
   const [search, setSearch] = useState("");
-  const [districtFilter, setDistrictFilter] = useState("");
-  const [policeFilter, setPoliceFilter] = useState("");
-  const [investigatorFilter, setInvestigatorFilter] = useState("");
-  const [claimType, setClaimType] = useState("");
+const [districtFilter, setDistrictFilter] = useState("");
+const [policeFilter, setPoliceFilter] = useState("");
+const [investigatorFilter, setInvestigatorFilter] = useState("");
+const [claimType, setClaimType] = useState("");
 
-  const [allocationFrom, setAllocationFrom] = useState("");
-  const [allocationTo, setAllocationTo] = useState("");
+const [allocationFrom, setAllocationFrom] = useState("");
+const [allocationTo, setAllocationTo] = useState("");
 
-  const [firFrom, setFirFrom] = useState("");
-  const [firTo, setFirTo] = useState("");
+const [firFrom, setFirFrom] = useState("");
+const [firTo, setFirTo] = useState("");
+
+const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
 
   const navigate = useNavigate();
 
@@ -34,13 +37,15 @@ const today = new Date().toISOString().split("T")[0];
     loadCases();
   }, []);
 
-  const loadCases = async () => {
-    const res = await getAllCases();
+ const loadCases = async () => {
+  const res = await getAllCases();
 
-    if (res.cases) {
-      setCases(res.cases);
-    }
-  };
+  console.log("Cases:", res.cases);
+
+  if (res.cases) {
+    setCases(res.cases);
+  }
+};
 
   const openCase = (c) => {
     navigate(`/case/${c.id}`, { state: c });
@@ -68,6 +73,18 @@ const today = new Date().toISOString().split("T")[0];
     placeholder="Search Case ID..."
     value={search}
     onChange={(e) => setSearch(e.target.value)}
+  />
+
+  <input
+    type="date"
+    value={fromDate}
+    onChange={(e) => setFromDate(e.target.value)}
+  />
+
+  <input
+    type="date"
+    value={toDate}
+    onChange={(e) => setToDate(e.target.value)}
   />
 </div>
 <div className="section-card">
@@ -163,64 +180,85 @@ const today = new Date().toISOString().split("T")[0];
             </thead>
 
             <tbody>
-  {cases
-    .filter((c) =>
-  c.case_id?.toLowerCase().includes(search.toLowerCase())
-)
+  
+{cases
+  .filter((c) =>
+    c.case_id?.toLowerCase().includes(search.toLowerCase())
+  )
 
-.filter((c) =>
-  districtFilter
-    ? (c.district || "")
-        .toLowerCase()
-        .includes(districtFilter.toLowerCase())
-    : true
-)
+  .filter((c) =>
+    districtFilter
+      ? (c.district || "")
+          .toLowerCase()
+          .includes(districtFilter.toLowerCase())
+      : true
+  )
 
-.filter((c) =>
-  policeFilter
-    ? (c.police_station || "")
-        .toLowerCase()
-        .includes(policeFilter.toLowerCase())
-    : true
-)
+  .filter((c) =>
+    policeFilter
+      ? (c.police_station || "")
+          .toLowerCase()
+          .includes(policeFilter.toLowerCase())
+      : true
+  )
 
-.filter((c) =>
-  investigatorFilter
-    ? (c.investigator_name || "")
-        .toLowerCase()
-        .includes(investigatorFilter.toLowerCase())
-    : true
-)
+  .filter((c) =>
+    investigatorFilter
+      ? (c.investigator_name || "")
+          .toLowerCase()
+          .includes(investigatorFilter.toLowerCase())
+      : true
+  )
 
-.filter((c) =>
-  claimType
-    ? c.claim_type === claimType
-    : true
-)
-.filter((c) =>
-  statusFilter
-    ? c.case_status?.toLowerCase() === statusFilter.toLowerCase()
-    : true
-)
+  .filter((c) =>
+    claimType
+      ? c.claim_type === claimType
+      : true
+  )
 
-.filter((c) =>
-  claimTypeFilter
-    ? c.claim_type === claimTypeFilter
-    : true
-)
+  .filter((c) =>
+    statusFilter
+      ? c.case_status?.toLowerCase() === statusFilter.toLowerCase()
+      : true
+  )
 
-.filter((c) =>
-  assignedFilter === "assigned"
-    ? !!c.investigator_name
-    : true
-)
+  .filter((c) =>
+    claimTypeFilter
+      ? c.claim_type === claimTypeFilter
+      : true
+  )
 
-.filter((c) =>
-  todayFilter === "true"
-    ? c.created_at?.startsWith(today)
-    : true
-)
-    .map((c) => (
+  .filter((c) =>
+    assignedFilter === "assigned"
+      ? !!c.investigator_name
+      : true
+  )
+
+  .filter((c) =>
+    todayFilter === "true"
+      ? c.created_at?.startsWith(today)
+      : true
+  )
+
+  // Teammate's date filter
+  .filter((c) => {
+    const caseDate = new Date(c.created_at);
+
+    if (fromDate) {
+      const from = new Date(fromDate);
+      if (caseDate < from) return false;
+    }
+
+    if (toDate) {
+      const to = new Date(toDate);
+      to.setHours(23, 59, 59, 999);
+      if (caseDate > to) return false;
+    }
+
+    return true;
+  })
+
+  .map((c) => (
                 <tr key={c.id}>
                   <td>{c.case_id}</td>
                   <td>{c.investigator_name || "Unassigned"}</td>

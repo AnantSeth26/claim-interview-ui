@@ -5,11 +5,11 @@ import "../styles/dashboard.css";
 import { LoadingContext } from "../context/LoadingContext";
 
 export default function Dashboard() {
-
   const [cases, setCases] = useState([]);
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("all");
-
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const { setLoading } = useContext(LoadingContext);
@@ -30,7 +30,6 @@ export default function Dashboard() {
         );
         setCases(unique);
       }
-
     } finally {
       setLoading(false);
     }
@@ -40,14 +39,31 @@ export default function Dashboard() {
     navigate(`/case/${c.id}`, { state: c });
   };
 
-  const filteredCases = cases
-    .filter((c) =>
-      c.case_id.toLowerCase().includes(search.toLowerCase())
-    )
-    .filter((c) => {
-      if (filterType === "all") return true;
-      return c.claim_type === filterType;
-    });
+ const filteredCases = cases
+  .filter((c) =>
+    c.case_id.toLowerCase().includes(search.toLowerCase())
+  )
+  .filter((c) => {
+  if (!startDate && !endDate) return true;
+
+  const caseDate = new Date(c.created_at);
+
+  if (startDate && caseDate < new Date(startDate)) {
+    return false;
+  }
+
+  if (endDate) {
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    if (caseDate > end) {
+      return false;
+    }
+  }
+
+  return true;
+})
+  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 
   return (
     <div className="page">
@@ -60,31 +76,41 @@ export default function Dashboard() {
               className="new-case-btn"
               onClick={() => navigate("/new-case")}
             >
-              + New Case
+               New Case
             </button>
           </div>
 
-          {/* 🔴 STEP 1 — GROUP SEARCH + FILTER */}
-          <div className="section-card">
-            <div className="flex-row">
-              <input
-                className="search-box"
-                placeholder="Search case ID..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+          <div className="section-card"> 
+  <input
+    className="search-box"
+    placeholder="Search case ID..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
 
-              <select
-                className="filter-box"
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-              >
-                <option value="all">All</option>
-                <option value="health">Health</option>
-                <option value="motor">Motor</option>
-              </select>
-            </div>
-          </div>
+  <div className="date-range">
+    <div className="date-field">
+      <label>From Date</label>
+      <input
+        type="date"
+        className="filter-box"
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+      />
+    </div>
+
+    <div className="date-field">
+      <label>To Date</label>
+      <input
+        type="date"
+        className="filter-box"
+        value={endDate}
+        onChange={(e) => setEndDate(e.target.value)}
+      />
+    </div>
+  </div>
+</div>
+          
 
           <h3>Previous Cases</h3>
 

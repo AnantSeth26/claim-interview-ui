@@ -226,10 +226,7 @@ export default function Login() {
 
 
 </div>
-<div className="ai-status">
-  <span className="status-dot"></span>
-  AI Fraud Engine Active
-</div>
+
         </div>
 
         {/* Right Side */}

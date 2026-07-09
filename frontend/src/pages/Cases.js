@@ -9,7 +9,6 @@ export default function Cases() {
 const [districtFilter, setDistrictFilter] = useState("");
 const [policeFilter, setPoliceFilter] = useState("");
 const [investigatorFilter, setInvestigatorFilter] = useState("");
-const [claimType, setClaimType] = useState("");
 
 const [allocationFrom, setAllocationFrom] = useState("");
 const [allocationTo, setAllocationTo] = useState("");
@@ -67,26 +66,7 @@ const today = new Date().toISOString().split("T")[0];
   </span>
 </div>
 
-<div className="cases-search">
-  <input
-    type="text"
-    placeholder="Search Case ID..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-  />
 
-  <input
-    type="date"
-    value={fromDate}
-    onChange={(e) => setFromDate(e.target.value)}
-  />
-
-  <input
-    type="date"
-    value={toDate}
-    onChange={(e) => setToDate(e.target.value)}
-  />
-</div>
 <div className="section-card">
 
   <h3>Filters</h3>
@@ -110,15 +90,14 @@ const today = new Date().toISOString().split("T")[0];
       value={investigatorFilter}
       onChange={(e) => setInvestigatorFilter(e.target.value)}
     />
+    <input
+    type="text"
+    placeholder="Search Case ID..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
 
-    <select
-      value={claimType}
-      onChange={(e) => setClaimType(e.target.value)}
-    >
-      <option value="">All Types</option>
-      <option value="health">Health</option>
-      <option value="motor">Motor</option>
-    </select>
+    
 
   </div>
 
@@ -210,11 +189,7 @@ const today = new Date().toISOString().split("T")[0];
       : true
   )
 
-  .filter((c) =>
-    claimType
-      ? c.claim_type === claimType
-      : true
-  )
+  
 
   .filter((c) =>
     statusFilter

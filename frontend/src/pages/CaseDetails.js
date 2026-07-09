@@ -1133,43 +1133,46 @@ export default function CaseDetails() {
   }}
 />
 
-               <button
-  onClick={async () => {
-
-    if (editingRemarkId) {
-
-      await updateRemark(editingRemarkId, {
-        text: remarkText
-      });
-
-    } else {
-
-      await addRemark(caseData.case_id, {
-        text: remarkText,
-        created_by:
-          user?.name ||
-          JSON.parse(localStorage.getItem("user"))?.name ||
-          "Unknown"
-      });
-
-    }
-
-    setRemarkText("");
-    setEditingRemarkId(null);
-    setShowRemarkModal(false);
-
-    loadData();
+              <div
+  style={{
+    display: "flex",
+    gap: "12px",
+    marginTop: "10px"
   }}
 >
-  {editingRemarkId ? "Save Changes" : "Add Remark"}
-</button>
+  <button
+    onClick={async () => {
 
-                <button
-                  style={{ marginTop: "10px" }}
-                  onClick={() => setShowRemarkModal(false)}
-                >
-                  Cancel
-                </button>
+      if (editingRemarkId) {
+        await updateRemark(editingRemarkId, {
+          text: remarkText
+        });
+      } else {
+        await addRemark(caseData.case_id, {
+          text: remarkText,
+          created_by:
+            user?.name ||
+            JSON.parse(localStorage.getItem("user"))?.name ||
+            "Unknown"
+        });
+      }
+
+      setRemarkText("");
+      setEditingRemarkId(null);
+      setShowRemarkModal(false);
+
+      loadData();
+    }}
+  >
+    {editingRemarkId ? "Save Changes" : "Add Remark"}
+  </button>
+
+  <button
+    onClick={() => setShowRemarkModal(false)}
+  >
+    Cancel
+  </button>
+</div>
               </div>
             </div>
           )}
